@@ -25,6 +25,7 @@
 
     public static function execute(){
       if (!Route::$_hasRun){
+        Config::before();
         Hooks::before();
         $route = Route::getRoute();
         include ($route['controller']);
@@ -33,6 +34,7 @@
         if (!method_exists($controller, $route['method'])) $route['method'] = 'index';
         call_user_func_array(array($controller, $route['method']), $route['args']);
         Hooks::after();
+        Config::after();
       }
     }
     
