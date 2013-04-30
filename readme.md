@@ -177,3 +177,42 @@ The before and after static methods are both present in config.php and hooks.php
 6. Config::after
 
 In keeping with the nature of the relative files - config should hold server (as in local, dev, stage and live) level methods. The Config::before() method, for instance, is a good place to include a file for debugging or testing - something you would not want deployed to a live server. The methods in hooks should be common to all servers. It is also worth noting that URI parsing happens before either so the URI methods are available in these functions.
+
+## Libraries
+
+Libraries are used to extend the functionality of GhostMVC. The built in functionality is intentionally limited, so you will probably need at least a few libraries. A library can be loaded with
+```php
+Load::library($libraryName);
+```
+
+## Directories
+
+The directory structure is important to Ghost MVC. There must be directories for models, views and controllers.
+
+### Root
+
+The root should contain index.php, config.php, hooks.php and possibly (reocmmended) a .htaccess file. The root will also contain your other directories. There are a few other types of files you may want in the root such as robots.txt, favicon.ico and other standard files but it is inadvisable to place any other application code in the root.
+
+### Controllers
+
+The controllers directory is required. Controllers are placed in this directory. You can put sub-directories in the controllers directory and standard routing will pick up on it. Be for-warned that sub-directories take precident over controllers, so if you have a controller named foo and sub-directory named foo, you will not be able to access the controller foo through standard routing. It is not advisable to use this as way to mask controllers as it will only lead to confusion.
+
+### Models
+
+The models directory is required, and models are placed in this directory. Sub-directories are allowed, but they must be included manually when models are loaded (Load::model('subdirectory/model');).
+
+### Views
+
+Required, sub-directory. Call manually.
+
+### Libraries
+
+Not required, sub-directory. Call manually.
+
+### Resources
+
+Resources is not required, nor even references. It is a good practice to include a resources folder and then put sub-folder for things like scripts, css, images and any other files your MVC app may need. Because resources is a suggestion and not a standard, it can have another name, however, in the future this may become a standard directory.
+
+### Permissions
+
+It is recommended that you set the permissions on the controllers, models, views and libraries to 0700 - give the owner full permission and remove permission from all others. This will prevent users from browsing to these directories. PHP will still be able to include them in the index.php which is the only script that is run directly. It is recommended that you leave normal permissions on the root, utilities and resources.
