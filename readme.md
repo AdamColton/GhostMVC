@@ -58,3 +58,87 @@ If no Conditional Route or Standard Route is found, the Default route, which is 
 
 This behavior can be good for giving a site default functionality. For instance, if you were writing a blog, the Default Route may perform a search. This way www.myblog.com/elephant would search the blog for the value "elephant" even though no "elephant" controller is defined.
 Technical Notes
+
+## Controllers
+
+A controller is simply a class placed in the controllers folder. Like any class, the constructor will be called when the class is instanciated. Beyond that, a controller should have an index method. The index method acts as the default method that will be called if no method is explicitly defined. A controller file should contain exactly one class and the file and class should both have the same name - all lower case. You can put sub directories in the controller folder and they will be reachable through all routing methods.
+
+## Views
+
+Views are used the generate the output. Ideally, views should be fragments of HTML with small bits of php to display calculated values. Views are accessed through the Render class.
+
+### Standard View
+
+The standard view is called with Render::view(string $viewName[, mixed $viewData]);. This will call the view defined by $viewName (you can include path, though the view folder is already prepended). $viewData is optional. It allows data to be passed to the view. It should be an array of key value pairs. When the view is called, the viewData array will be unwrapped. If Array("pi" => 3.1415) is passed in as viewData, then $pi will have the value 3.1415 in the view.
+#### Example
+Controller
+```php
+Class foo{
+  function hello(){
+    $data = Array(
+      "firstName" => "Ada",
+      "lastName" => "Loveless"
+    );
+    Render::view("sayHello", $data);
+  }
+}
+```
+View (sayHello.php)
+```php
+  Hello, <?= $firstName ?><?= $lastName ?><br />
+```
+
+Together these will produce
+```html
+Hello, Ada Loveless<br />
+```
+
+### Map View
+
+Map View is a way to call a single view repeatdly for a set of data. The call to map view is Render::mapView(string $viewName, mixed $mapData);. Unlike view, $mapData is required. It should be an array of viewData arrays, though it will handle an empty array (and just not render anything).
+#### Example
+
+Controller
+```php
+Class foo{
+  function manyHellos(){
+    $data = Array(
+      Array("firstName" => "Ada", "lastName" => "Loveless");
+      Array("firstName" => "Linus", "lastName" => "Torvalds");
+      Array("firstName" => "Steve", "lastName" => "Wozniak");
+      Array("firstName" => "Rasmus", "lastName" => "Lerdorf");
+    );
+    Render::mapView("sayHello", $data);
+  }
+}
+```
+Will produce
+```html
+Hello, Ada Loveless<br />
+Hello, Linus Torvalds<br />
+Hello, Steve Wozniak<br />
+Hello, Rasmus Lerdorf<br />
+```
+### Multiple Views
+
+It is possible(and often a good practice) to call multiple views. They will be executed as they are called, in order.
+
+'''php
+Class foo{
+  function manyHellos(){
+    $data = Array(
+      Array("firstName" => "Ada", "lastName" => "Loveless");
+      Array("firstName" => "Linus", "lastName" => "Torvalds");
+      Array("firstName" => "Steve", "lastName" => "Wozniak");
+      Array("firstName" => "Rasmus", "lastName" => "Lerdorf");
+    );
+    Render::view("header", Array("title" => "Saying Hello"));
+    Render::mapView("sayHello", $data);
+    Render::view("footer");
+  }
+}
+'''
+
+### JSON View
+
+The Json view is called with Render::json($data); where data is an array or object. The object is encoded as json and rendered as output.
