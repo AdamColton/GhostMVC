@@ -1,20 +1,23 @@
+# If Ghost MVC lives in the subdirectory of another site, replace SUBDIRECTORY with that directories name
+# otherwise, remove the 3 instances of /SUBDIRECTORY from this file
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /myMvc/
+    RewriteBase /SUBDIRECTORY/
 
     #Removes access to the system folder by users.
     #Additionally this will allow you to create a System.php controller,
     #previously this would not have been possible.
     #'system' can be replaced if you have renamed your system folder.
     RewriteCond %/{REQUEST_URI} ^system.*
-    RewriteRule ^(.*)$ /myMvc/index.php?/$1 [L]
+    RewriteRule ^(.*)$ /SUBDIRECTORY/index.php?/$1 [L]
 
     #Checks to see if the user is attempting to access a valid file,
     #such as an image or css document, if this isn't true it sends the
     #request to index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ /myMvc/index.php?/$1 [L]
+    RewriteRule ^(.*)$ /SUBDIRECTORY/index.php?/$1 [L]
 </IfModule>
 
 <IfModule !mod_rewrite.c>
