@@ -140,6 +140,7 @@
     
     public function ControllerMethod($controller, $method){
       $this->_method = $method;
+      $this->_controller = $controller;
       return $this;
     }
     
