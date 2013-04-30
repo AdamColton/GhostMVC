@@ -142,3 +142,38 @@ Class foo{
 ### JSON View
 
 The Json view is called with Render::json($data); where data is an array or object. The object is encoded as json and rendered as output.
+
+## Models
+
+A model is just a class placed in the models folder. It can only be called by a controller. It is included using
+```php
+Load::model(string $modelName);
+```
+
+## Config
+This is meant to encapsulate server level configurations. Any differences between a development and a live server should exist here. Values that often live in this file are things like database connections, session path and root url.
+
+The three required values are
+* HOME_CONTROLLER
+* DEFAULT_CONTROLLER
+* DEFAULT_METHOD
+
+These values currently live in config.php but would be more appropriate in hooks.php. In some future revision, this change will be made.
+
+The two methods that must be present in Config are before() and after() - see Before, After and Execution Order.
+
+## Hooks
+Hooks provides three methods that Ghost MVC will call during its execution - before, after and setConditionalRoutes. For inormation on before and after see Before, After and Execution Order. The method setConditionalRoutes should only be used to set conditional routes. Following this convention prevents any unintended side effects as well as makes the method a singular reference for all conditional routing on a site thereby easing team communication.
+
+## Before, After and Execution Order
+
+The before and after static methods are both present in config.php and hooks.php. The execution path of Ghost MVC is as follows
+
+1. URI parsing
+2. Config::before()
+3. Hooks::before()
+4. MVC route execution
+5. Hooks::after()
+6. Config::after
+
+In keeping with the nature of the relative files - config should hold server (as in local, dev, stage and live) level methods. The Config::before() method, for instance, is a good place to include a file for debugging or testing - something you would not want deployed to a live server. The methods in hooks should be common to all servers. It is also worth noting that URI parsing happens before either so the URI methods are available in these functions.
