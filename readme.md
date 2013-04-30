@@ -1,8 +1,9 @@
 # GhostMVC
 
-GhostMVC is a lightweight MVC. The most basic version allows you to create Models, Views, Controllers and routing to map URI's to specific controller methods. GhostMVC also comes with the ability to load libraries to extend the functionality to include tools like templating and databases.
+GhostMVC was influenced primarily by CodeIgniter and the ASP.NET MVC. I ended up writing the core almost accidentally while experimenting with how to parse URIs in PHP. I was inspired to take my experiment and build it out to an MVC when I ran into a problem in CodeIgniter that I could not access $_GET.
 
-GhostMVC is largely modeled on the CodeIgniter framework with the goal of a simplier file structure and cleaner interface. It also adopts some concepts from the ASP.NET MVC.
+When I decided to take my experiments and build an MVC engine on them, I had a few objectives. I wanted a small core with just a few files and a simple file structure. I felt that a good MVC should run on a small, solid core and have its abilities augmented with libraries and utilities.
+
 
 ## Routes
 
@@ -216,3 +217,23 @@ Resources is not required, nor even references. It is a good practice to include
 ### Permissions
 
 It is recommended that you set the permissions on the controllers, models, views and libraries to 0700 - give the owner full permission and remove permission from all others. This will prevent users from browsing to these directories. PHP will still be able to include them in the index.php which is the only script that is run directly. It is recommended that you leave normal permissions on the root, utilities and resources.
+
+## Execution Path
+
+### Index.php
+
+This technical overview covers the execution path of index.php in the root. Looking at the source code, you will see, very near the top that the execution is divided into URI::_class_init_(); and Route::execute(). The first part initilizes URI - a singleton. The second part executes the route, which includes evaluating which route will be called, constructing an instance of the controller object and calling the correct method.
+
+### URI
+
+The purpose of the URI class is to parse the query string based on whether a .htaccess file was used. Because _class_init_ is public and could be called from a controller, the entire execution block is wrapped in a check to make sure this has not run before. To determine if a .htaccess file was used, ($_ENV['REDIRECT_STATUS'] == 200) is used. If a .htaccess file was used, the $_GET data will not be correct. This is fixed by calling __resetGetArray() which will manually rebuild the GET data and store it in the global $_GET array. From here, the only difference between using a .htaccess file and not using one is where the REST data is stored. If we are using a .htaccess file, REST data will be in $_SERVER['REDIRECT_QUERY_STRING'], if not, it will be in $_SERVER['PATH_INFO'].
+
+### Route
+
+Just like URI, Routes::execute() is public and so the whole method is wrapped in a check to ensure that it is only executed once. The first thing that the execute method does is call the before methods in config and hook. After this, it evaluates which route to use.
+
+Evaluation of coniditional routes is a rather inelegant process. GET, POST SESSION and URI are all checked against defined parameters. If at any point a non-match is found, we continue to the evaluating the next route. If we reach the bottom without encountering a non-match, that conditional route is returned. If we evaluate all conditional routes without finding a match, then we look for a standard route
+
+Evaluating a standard route is simply checking that the file exists and that neither the folders, controller or method are prefixed with an underscore. If any of these conditions fail, the default route is returned. If everything does check out, the standard route is returned.
+
+Now that we have a route, Route::execute() can finish. The controller file is included and an instance of the class is created. If the controller does not have the method specified by the route, we default to the index method. We now have all the data to execute the call. The last step is to call the Config::after() hook.
